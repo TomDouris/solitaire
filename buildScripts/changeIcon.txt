@@ -1,0 +1,6 @@
+  //This script updates an icon in solitair.exe 
+  [FILENAMES]
+  Exe=    dist\solitaire-py\solitaire-py.exe
+  SaveAs= dist\solitaire-py\solitaire.exe	
+  [COMMANDS]
+  -addoverwrite Ace-of-Clubs.ico, ICONGROUP,MAINICON,0
