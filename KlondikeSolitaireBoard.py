@@ -187,11 +187,11 @@ class KlondikeSolitaireBoard:
             self.selected_pile = None
 
         selected_pile = None
-        if self.waste_pile.click(location):
+        if self.waste_pile.doubleclick(location):
             selected_pile = self.waste_pile
 
         for tableau_faceup_pile in self.tableau_face_up_piles:
-            if tableau_faceup_pile.click(location, True):
+            if tableau_faceup_pile.doubleclick(location):
                 selected_pile = tableau_faceup_pile
                 break
 
