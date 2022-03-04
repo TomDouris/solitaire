@@ -98,28 +98,35 @@ class GameController:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:   #left mouse button click
                         position = pygame.mouse.get_pos()
-                        self.click_location = Location(position[0],position[1])
-                        if self.timer == 0:
-                            # First mouse click. Start the timer
-                            self.previous_click_location = self.click_location
-                            self.timer = 0.001
+                        if True:
+                            self.click_location = Location(position[0],position[1])
                             self.event = Events.LEFT_MOUSE_CLICK
-                        elif self.timer < 0.5:
-                            # Clicked again before 0.5 seconds
-                            if self.click_location.near(self.previous_click_location):
-                                self.event = Events.DOUBLE_LEFT_MOUSE_CLICK
+                        else:
+                            self.click_location = Location(position[0],position[1])
+                            if self.timer == 0:
+                                # First mouse click. Start the timer
+                                self.previous_click_location = self.click_location
+                                self.timer = 0.001
+                                self.event = Events.LEFT_MOUSE_CLICK
+                            elif self.timer < 0.5:
+                                # Clicked again before 0.5 seconds
+                                if self.click_location.near(self.previous_click_location):
+                                    self.event = Events.DOUBLE_LEFT_MOUSE_CLICK
+                                else:
+                                    self.event = Events.LEFT_MOUSE_CLICK
+                                    self.timer = 0
                             else:
                                 self.event = Events.LEFT_MOUSE_CLICK
-                                self.timer = 0
-                        else:
-                            self.event = Events.LEFT_MOUSE_CLICK
             # Increase timer after mouse was pressed the first time.
-            if self.timer != 0:
-                self.timer += self.dt
-                if self.timer >= 0.5:
-                    # Reset timer after 0.5 seconds.
-                    self.timer = 0
-            self.dt = self.clock.tick(30) / 1000
+            if True:
+                pass
+            else:
+                if self.timer != 0:
+                    self.timer += self.dt
+                    if self.timer >= 0.5:
+                        # Reset timer after 0.5 seconds.
+                        self.timer = 0
+                self.dt = self.clock.tick(30) / 1000
 
     def draw_text(self, text, font_name, font_size, location, color):
         font = pygame.font.SysFont(font_name, font_size)
