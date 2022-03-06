@@ -103,7 +103,7 @@ class GameController:
                 if event.type == pygame.MOUSEMOTION:
                     if event.buttons == (1, 0, 0):
                         position = pygame.mouse.get_pos()
-                        self.mouse_location = pygame.mouse.get_pos()
+                        self.mouse_location = Location(position[0],position[1])
                         self.event = Events.LEFT_MOUSE_MOTION
                         #print ("MOUSEMOTION")
 

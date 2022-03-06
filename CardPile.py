@@ -55,6 +55,9 @@ class CardPile:
         if not self.selected_card is None:
             self.selected_card.selected = False
 
+    def is_selected(self, location):
+        return False, None
+
 class WastePile(CardPile):
 
     def __init__(self, name, cards=None, location=Location(0,0)):
@@ -81,6 +84,16 @@ class WastePile(CardPile):
                     self.selected_card.selected = True
                     return True
         return False
+
+    def is_selected(self, location):
+        if self.cards_to_display > 0:
+            last_card_location = Location(self.location.x + constants.CELL_WIDTH*2/3*(self.cards_to_display-1), self.location.y)
+            if ((location.x >= last_card_location.x) and
+                (location.x <= (last_card_location.x + constants.CELL_WIDTH)) and
+                (location.y >= last_card_location.y) and
+                (location.y <= (last_card_location.y + constants.CELL_WIDTH))):
+                    return True, self.cards[-1]
+        return False, None
 
     def doubleclick(self, location):
         return self.click(location)
@@ -109,6 +122,15 @@ class StockPile(CardPile):
         else:
             return False
 
+    def is_selected(self, location):
+        if ((location.x >= self.location.x) and
+            (location.x <= (self.location.x + constants.CELL_WIDTH)) and
+            (location.y >= self.location.y) and
+            (location.y <= (self.location.y + constants.CELL_WIDTH))):
+            return True, None
+        else:
+            return False, None
+
 class FoundationPile(CardPile):
 
     def __init__(self, name, cards=None, location=Location(0,0)):
@@ -131,6 +153,15 @@ class FoundationPile(CardPile):
             return True
         else:
             return False
+
+    def is_selected(self, location):
+        if ((location.x >= self.location.x) and
+            (location.x <= (self.location.x + constants.CELL_WIDTH)) and
+            (location.y >= self.location.y) and
+            (location.y <= (self.location.y + constants.CELL_WIDTH))):
+            return True, None
+        else:
+            return False, None
 
     def is_valid_move_to(self, from_pile, card):
 
@@ -208,6 +239,30 @@ class TableauFaceUpPile(CardPile):
                     self.selected_card_index = i
                     return True
         return False
+
+    def is_selected(self, location):
+        if len(self.cards) == 0:
+            if ((location.x >= self.location.x) and
+                (location.x <= (self.location.x + constants.CELL_WIDTH)) and
+                (location.y >= self.location.y) and
+                (location.y <= (self.location.y + constants.CELL_WIDTH))):
+                return True, None
+        for i,card in enumerate(self.cards):
+            card_location = Location(self.location.x, self.location.y + round(constants.CELL_WIDTH*2/3)*i)
+            if (i == len(self.cards)-1):        # last card is a little larger
+                if ((location.x >= card_location.x) and
+                    (location.x <= (card_location.x + constants.CELL_WIDTH)) and
+                    (location.y >= card_location.y) and
+                    (location.y <= (card_location.y + constants.CELL_WIDTH))):
+                    return True, card
+            else:
+                if ((location.x >= card_location.x) and
+                    (location.x <= (card_location.x + constants.CELL_WIDTH)) and
+                    (location.y >= card_location.y) and
+                    (location.y <= (card_location.y + constants.CELL_WIDTH*2/3))):
+                    return True, card
+        return False, None
+
 
     def doubleclick(self, location):
         if len(self.cards) == 0:

@@ -26,8 +26,13 @@ class KlondikeSolitaireBoard:
         self._set_board_locations()
         self.selected_pile = None
         self.game_won = False
+        self.mouse_down_location = None
+        self.mouse_down_pile = None
+        self.mouse_down_card = None
 
     def _deal(self):
+
+        self.my_piles = []
 
         # create tableau face down and face up piles and deal cards into them.
         facedown_pile_lens = [0,1,2,3,4,5,6] 
@@ -40,19 +45,24 @@ class KlondikeSolitaireBoard:
             tableau_faceup_pile = TableauFaceUpPile(f'Tableau FaceUp pile {i}', tableau_facedown_pile)
             self.card_deck.deal(1, tableau_faceup_pile)
             self.tableau_face_up_piles.append(tableau_faceup_pile)
+        self.my_piles.extend(self.tableau_face_down_piles)
+        self.my_piles.extend(self.tableau_face_up_piles)
 
         # create stock pile and deal remainder of cards into it
         self.stock_pile = StockPile('Stock pile')
         self.card_deck.deal(len(self.card_deck), self.stock_pile)
+        self.my_piles.append(self.stock_pile)
  
         # create an empty waste pile
         self.waste_pile = WastePile('Waste pile')
+        self.my_piles.append(self.waste_pile)
 
         # create 4 empty foundation piles
         self.foundation_piles = []
         for i in range(4):
             foundation_pile = FoundationPile(f'Foundation Pile {i}')
             self.foundation_piles.append(foundation_pile)
+        self.my_piles.extend(self.foundation_piles)
 
     # set locations for cards and instructions on board
     def _set_board_locations(self):
@@ -133,12 +143,37 @@ class KlondikeSolitaireBoard:
                 self._undo_deal_cards(from_pile, to_pile, number_of_cards, waste_pile_cards_to_display)
 
     def left_mouse_down(self, location):
-        self._click(location)
+        if not isinstance(location, Location):
+            raise TypeError(f'location is type {type(location)} is not type Location')
+        self.mouse_down_pile, self.mouse_down_card = self._get_pile_and_card(location)
+        self.mouse_down_location = location
+        if not self.mouse_down_pile is None:
+            print ("mouse_down", self.mouse_down_location, self.mouse_down_pile.name, self.mouse_down_card)
 
     def left_mouse_up(self, location):
-        pass
+        if not isinstance(location, Location):
+            raise TypeError(f'location is type {type(location)} is not type Location')
+        mouse_up_pile, mouse_up_card = self._get_pile_and_card(location)
+        if not mouse_up_pile is None:
+            print ("mouse_up", location, mouse_up_pile.name, mouse_up_card)
+        if self.mouse_down_pile == mouse_up_pile and self.mouse_down_card == mouse_up_card:
+            print ('clicking')
+            self._click(location)
+        self.mouse_down_pile = None
+        self.mouse_up_pile = None
 
     def left_mouse_motion(self, location):
+        if not isinstance(location, Location):
+            raise TypeError(f'location is type {type(location)} is not type Location')
+
+    def _get_pile_and_card(self, location):
+        for pile in self.my_piles:
+            selected, card = pile.is_selected(location)
+            if selected:
+                return pile, card
+        return None, None
+
+    def _drag(mouse_up_location, mouse_down_location):
         pass
 
     def _click(self, location):
