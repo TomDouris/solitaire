@@ -124,7 +124,24 @@ class KlondikeSolitaireBoard:
             self.tableau_face_up_piles[i].draw(screen)
         pygame.display.flip()
 
-    def click(self, location):
+    def undo(self):
+        if len(self.moves) != 0:
+            move_type, from_pile, to_pile, number_of_cards, waste_pile_cards_to_display = self.moves.pop()
+            if move_type == 'move_cards':
+                self._undo_move_cards(from_pile, to_pile, number_of_cards, waste_pile_cards_to_display)
+            elif move_type == 'deal_cards':
+                self._undo_deal_cards(from_pile, to_pile, number_of_cards, waste_pile_cards_to_display)
+
+    def left_mouse_down(self, location):
+        self._click(location)
+
+    def left_mouse_up(self, location):
+        pass
+
+    def left_mouse_motion(self, location):
+        pass
+
+    def _click(self, location):
 
         if not isinstance(location, Location):
             raise TypeError(f'location is type {type(location)} is not type Location')
@@ -177,7 +194,7 @@ class KlondikeSolitaireBoard:
         if len(self.waste_pile) > 0 and self.waste_pile.cards_to_display == 0:
             self.waste_pile.cards_to_display = 1
 
-    def doubleclick(self, location):
+    def _doubleclick(self, location):
 
         if not isinstance(location, Location):
             raise TypeError(f'location is type {type(location)} is not type Location')
@@ -204,14 +221,6 @@ class KlondikeSolitaireBoard:
 
         if len(self.waste_pile) > 0 and self.waste_pile.cards_to_display == 0:
             self.waste_pile.cards_to_display = 1
-
-    def undo(self):
-        if len(self.moves) != 0:
-            move_type, from_pile, to_pile, number_of_cards, waste_pile_cards_to_display = self.moves.pop()
-            if move_type == 'move_cards':
-                self._undo_move_cards(from_pile, to_pile, number_of_cards, waste_pile_cards_to_display)
-            elif move_type == 'deal_cards':
-                self._undo_deal_cards(from_pile, to_pile, number_of_cards, waste_pile_cards_to_display)
 
     def _move_cards(self, from_pile, to_pile, cards_to_move):
         to_pile.cards.extend(from_pile.cards[-cards_to_move:])

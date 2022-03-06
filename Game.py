@@ -32,13 +32,17 @@ class Game(Runnable):
             elif self.controller.event == Events.ESCAPE_KEY:
                 self.running = False
                 self.controller.run_object = self.controller.RunObject.MAIN_MENU
-        
-            elif self.controller.event == Events.LEFT_MOUSE_CLICK:
-                self.board.click(self.controller.click_location)
+
+            elif self.controller.event == Events.LEFT_MOUSE_DOWN:
+                self.board.left_mouse_down(self.controller.mouse_location)
                 self.board.draw(self.controller.screen)
 
-            elif self.controller.event == Events.DOUBLE_LEFT_MOUSE_CLICK:
-                self.board.doubleclick(self.controller.click_location)
+            elif self.controller.event == Events.LEFT_MOUSE_UP:
+                self.board.left_mouse_up(self.controller.mouse_location)
+                self.board.draw(self.controller.screen)
+
+            elif self.controller.event == Events.LEFT_MOUSE_MOTION:
+                self.board.left_mouse_motion(self.controller.mouse_location)
                 self.board.draw(self.controller.screen)
 
             elif self.controller.event == Events.CTRL_Z_KEY:

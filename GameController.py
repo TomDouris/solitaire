@@ -50,13 +50,6 @@ class GameController:
         self.font_name = pygame.font.get_default_font()
         self.game = None
 
-        self.timer = 0
-        self.dt = 0
-
-        self.run_object_dict = {self.RunObject.MAIN_MENU: MainMenu,
-                                self.RunObject.GAME: Game,
-                                self.RunObject.WIN_GAME: WinGame}
-
         self.run_object = self.RunObject.MAIN_MENU
 
     def _parse_args(self, args):
@@ -98,35 +91,21 @@ class GameController:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:   #left mouse button click
                         position = pygame.mouse.get_pos()
-                        if True:
-                            self.click_location = Location(position[0],position[1])
-                            self.event = Events.LEFT_MOUSE_CLICK
-                        else:
-                            self.click_location = Location(position[0],position[1])
-                            if self.timer == 0:
-                                # First mouse click. Start the timer
-                                self.previous_click_location = self.click_location
-                                self.timer = 0.001
-                                self.event = Events.LEFT_MOUSE_CLICK
-                            elif self.timer < 0.5:
-                                # Clicked again before 0.5 seconds
-                                if self.click_location.near(self.previous_click_location):
-                                    self.event = Events.DOUBLE_LEFT_MOUSE_CLICK
-                                else:
-                                    self.event = Events.LEFT_MOUSE_CLICK
-                                    self.timer = 0
-                            else:
-                                self.event = Events.LEFT_MOUSE_CLICK
-            # Increase timer after mouse was pressed the first time.
-            if True:
-                pass
-            else:
-                if self.timer != 0:
-                    self.timer += self.dt
-                    if self.timer >= 0.5:
-                        # Reset timer after 0.5 seconds.
-                        self.timer = 0
-                self.dt = self.clock.tick(30) / 1000
+                        self.mouse_location = Location(position[0],position[1])
+                        self.event = Events.LEFT_MOUSE_DOWN
+                        #print ("MOUSEBUTTONDOWN")
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if event.button == 1:
+                        position = pygame.mouse.get_pos()
+                        self.mouse_location = Location(position[0],position[1])
+                        self.event = Events.LEFT_MOUSE_UP
+                        #print ("MOUSEBUTTONUP")
+                if event.type == pygame.MOUSEMOTION:
+                    if event.buttons == (1, 0, 0):
+                        position = pygame.mouse.get_pos()
+                        self.mouse_location = pygame.mouse.get_pos()
+                        self.event = Events.LEFT_MOUSE_MOTION
+                        #print ("MOUSEMOTION")
 
     def draw_text(self, text, font_name, font_size, location, color):
         font = pygame.font.SysFont(font_name, font_size)

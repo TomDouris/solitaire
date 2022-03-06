@@ -24,8 +24,6 @@ class About(Runnable):
         version_string = (str(self.controller.version_major) + '.' +
                          str(self.controller.version_minor) + '.' + 
                          str(self.controller.version_build))
-        print (version_string)
-
         font = pygame.font.SysFont(constants.FONT_ARIAL, 20, True, False)
         text = font.render("Solitaire Version " + version_string, True, constants.BLACK)
         self.controller.screen.blit(text, [constants.FRAME_MAX_X*2/10, constants.FRAME_MAX_Y*2/5])
