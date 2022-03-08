@@ -1,6 +1,7 @@
 # KlondikeSolitaireBoard.py
 
 import pygame
+import traceback
 
 from CardPile import CardPile, WastePile, TableauFaceDownPile, TableauFaceUpPile, StockPile, FoundationPile
 from Location import Location
@@ -24,12 +25,14 @@ class KlondikeSolitaireBoard:
         self._deal()
         self.game_instructions = Instructions(constants.KLONDIKE_INSTRUCTIONS)
         self._set_board_locations()
-        self.selected_pile = None
         self.game_won = False
-        self.mouse_down_location = None
+        self.selected_pile = None
         self.mouse_down_pile = None
         self.mouse_down_card = None
-
+        self.mouse_down_card_original_location = None
+        self.mouse_down_card_location = None
+        self.mouse_down_card_offset = None
+ 
     def _deal(self):
 
         self.my_piles = []
@@ -124,7 +127,7 @@ class KlondikeSolitaireBoard:
         screen.fill(constants.GREEN)
         self.game_instructions.draw(screen)
         self.stock_pile.draw(screen)
-        self.waste_pile.draw(screen)
+        self.waste_pile.draw(screen, self.mouse_down_card, self.mouse_down_card_location)
         for pile in self.foundation_piles:
             pile.draw(screen)
         for i,tableau_face_down_pile in enumerate(self.tableau_face_down_piles):
@@ -132,6 +135,10 @@ class KlondikeSolitaireBoard:
             self.tableau_face_up_piles[i].location = Location(tableau_face_down_pile.location.x,
                 tableau_face_down_pile.location.y + round(constants.CELL_WIDTH/5)*len(tableau_face_down_pile))
             self.tableau_face_up_piles[i].draw(screen)
+
+        # draw moved card pile last
+        if not self.mouse_down_pile is None:
+            self.mouse_down_pile.draw(screen, self.mouse_down_card, self.mouse_down_card_location)
         pygame.display.flip()
 
     def undo(self):
@@ -145,36 +152,40 @@ class KlondikeSolitaireBoard:
     def left_mouse_down(self, location):
         if not isinstance(location, Location):
             raise TypeError(f'location is type {type(location)} is not type Location')
-        self.mouse_down_pile, self.mouse_down_card = self._get_pile_and_card(location)
-        self.mouse_down_location = location
-        if not self.mouse_down_pile is None:
-            print ("mouse_down", self.mouse_down_location, self.mouse_down_pile.name, self.mouse_down_card)
+        self.mouse_down_pile, self.mouse_down_card, self.mouse_down_card_offset = self._get_pile_and_card(location)
+        if not self.mouse_down_card_offset is None:
+            self.mouse_down_card_location = self.mouse_down_card_original_location = Location(location.x - self.mouse_down_card_offset.x, location.y - self.mouse_down_card_offset.y)
 
     def left_mouse_up(self, location):
         if not isinstance(location, Location):
             raise TypeError(f'location is type {type(location)} is not type Location')
-        mouse_up_pile, mouse_up_card = self._get_pile_and_card(location)
-        if not mouse_up_pile is None:
-            print ("mouse_up", location, mouse_up_pile.name, mouse_up_card)
-        if self.mouse_down_pile == mouse_up_pile and self.mouse_down_card == mouse_up_card:
-            print ('clicking')
-            self._click(location)
+        mouse_up_pile, mouse_up_card, mouse_up_offset = self._get_pile_and_card(location)
+        if not self.mouse_down_pile is None and not mouse_up_pile is None:
+            if self.mouse_down_pile == mouse_up_pile and self.mouse_down_card == mouse_up_card:
+                self._click(location)
+            elif mouse_up_pile.is_valid_move_to(self.mouse_down_pile, self.mouse_down_card):
+                self._move_cards(self.mouse_down_pile, mouse_up_pile, 1)
         self.mouse_down_pile = None
-        self.mouse_up_pile = None
+        self.mouse_down_card = None
+        self.mouse_down_card_offset = None
+        self.mouse_down_card_original_location = None
+        self.mouse_down_card_location = None
 
     def left_mouse_motion(self, location):
         if not isinstance(location, Location):
             raise TypeError(f'location is type {type(location)} is not type Location')
+        if not self.mouse_down_pile is None:
+            if not self.mouse_down_card is None:
+                if not self.mouse_down_card_original_location is None:
+                    if not self.mouse_down_card_offset is None:
+                        self.mouse_down_card_location = Location(location.x - self.mouse_down_card_offset.x, location.y - self.mouse_down_card_offset.y)
 
     def _get_pile_and_card(self, location):
         for pile in self.my_piles:
-            selected, card = pile.is_selected(location)
+            selected, card, offset = pile.is_selected(location)
             if selected:
-                return pile, card
-        return None, None
-
-    def _drag(mouse_up_location, mouse_down_location):
-        pass
+                return pile, card, offset
+        return None, None, None
 
     def _click(self, location):
 

@@ -16,11 +16,6 @@ class Location():
             y = int(y)
         if not isinstance(y, int):
             raise TypeError(f"Argument y must be of type int, not {type(y)} y:{y}")
-        if x < 0 or x > constants.FRAME_MAX_X:
-            raise ValueError(f"Argument x must be between 0 and {constants.FRAME_MAX_X} x:{x}")
-        if y < 0 or y > constants.FRAME_MAX_Y:
-            raise ValueError(f"Argument y must be between 0 and {constants.FRAME_MAX_Y} x:{y}")
-
         self.x = x
         self.y = y
 

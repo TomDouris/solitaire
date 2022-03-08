@@ -38,7 +38,7 @@ class CardPile:
     def __len__(self):
         return len(self.cards)
 
-    def draw(self, screen):             # Abstract method, defined by convention only
+    def draw(self, screen, selected_card=None, selected_card_location=None):             # Abstract method, defined by convention only
         raise NotImplementedError("Subclass must implement abstract method")
 
     # returns True if card was clicked in this pile
@@ -56,7 +56,7 @@ class CardPile:
             self.selected_card.selected = False
 
     def is_selected(self, location):
-        return False, None
+        return False, None, None
 
 class WastePile(CardPile):
 
@@ -65,11 +65,14 @@ class WastePile(CardPile):
         self.cards_to_display = 0
         self.second_click_move_from_allowed = True
 
-    def draw(self, screen):
+    def draw(self, screen, selected_card=None, selected_card_location=None):
         if len(self.cards) > 0:
             for i in range(self.cards_to_display):
                 card = self.cards[len(self.cards)-self.cards_to_display + i]
                 card_location = Location(self.location.x + constants.CELL_WIDTH*2/3*i, self.location.y)
+                if not selected_card is None and not selected_card_location is None:
+                    if selected_card == card:
+                        card_location = selected_card_location
                 card.draw(screen, card_location, True)
 
     # returns True clicked in this pile
@@ -92,8 +95,9 @@ class WastePile(CardPile):
                 (location.x <= (last_card_location.x + constants.CELL_WIDTH)) and
                 (location.y >= last_card_location.y) and
                 (location.y <= (last_card_location.y + constants.CELL_WIDTH))):
-                    return True, self.cards[-1]
-        return False, None
+                    offset = Location(location.x - last_card_location.x, location.y - last_card_location.y)
+                    return True, self.cards[-1], offset
+        return False, None, None
 
     def doubleclick(self, location):
         return self.click(location)
@@ -103,7 +107,7 @@ class StockPile(CardPile):
     def __init__(self, name, cards=None, location=Location(0,0)):
         CardPile.__init__(self, name, cards, location)
 
-    def draw(self, screen):
+    def draw(self, screen, selected_card=None, selected_card_location=None):
         if len(self.cards) > 0:
             # display top card
             self.cards[len(self.cards)-1].draw(screen, self.location, False)
@@ -127,16 +131,16 @@ class StockPile(CardPile):
             (location.x <= (self.location.x + constants.CELL_WIDTH)) and
             (location.y >= self.location.y) and
             (location.y <= (self.location.y + constants.CELL_WIDTH))):
-            return True, None
+            return True, None, None
         else:
-            return False, None
+            return False, None, None
 
 class FoundationPile(CardPile):
 
     def __init__(self, name, cards=None, location=Location(0,0)):
         CardPile.__init__(self, name, cards, location)
 
-    def draw(self, screen):
+    def draw(self, screen, selected_card=None, selected_card_location=None):
         if len(self.cards) > 0:
             self.cards[len(self.cards)-1].draw(screen, self.location, True)
         else:
@@ -159,9 +163,9 @@ class FoundationPile(CardPile):
             (location.x <= (self.location.x + constants.CELL_WIDTH)) and
             (location.y >= self.location.y) and
             (location.y <= (self.location.y + constants.CELL_WIDTH))):
-            return True, None
+            return True, None, None
         else:
-            return False, None
+            return False, None, None
 
     def is_valid_move_to(self, from_pile, card):
 
@@ -187,7 +191,7 @@ class TableauFaceDownPile(CardPile):
     def __init__(self, name, cards=None, location=Location(0,0)):
         CardPile.__init__(self, name, cards, location)
 
-    def draw(self, screen):
+    def draw(self, screen, selected_card=None, selected_card_location=None):
         if len(self.cards) > 0:
             for i, card in enumerate(self.cards):
                 card_location = Location(self.location.x, self.location.y + round(constants.CELL_WIDTH/5)*i)
@@ -205,7 +209,7 @@ class TableauFaceUpPile(CardPile):
         self.my_face_down_pile = my_face_down_pile
         self.second_click_move_from_allowed = True
 
-    def draw(self, screen):
+    def draw(self, screen, selected_card=None, selected_card_location=None):
         for i, card in enumerate(self.cards):
             card_location = Location(self.location.x, self.location.y + round(constants.CELL_WIDTH*2/3)*i)
             card.draw(screen, card_location, True)
@@ -246,7 +250,7 @@ class TableauFaceUpPile(CardPile):
                 (location.x <= (self.location.x + constants.CELL_WIDTH)) and
                 (location.y >= self.location.y) and
                 (location.y <= (self.location.y + constants.CELL_WIDTH))):
-                return True, None
+                return True, None, None
         for i,card in enumerate(self.cards):
             card_location = Location(self.location.x, self.location.y + round(constants.CELL_WIDTH*2/3)*i)
             if (i == len(self.cards)-1):        # last card is a little larger
@@ -254,14 +258,16 @@ class TableauFaceUpPile(CardPile):
                     (location.x <= (card_location.x + constants.CELL_WIDTH)) and
                     (location.y >= card_location.y) and
                     (location.y <= (card_location.y + constants.CELL_WIDTH))):
-                    return True, card
+                    offset = Location(location.x - card_location.x, location.y - card_location.y)
+                    return True, card, offset
             else:
                 if ((location.x >= card_location.x) and
                     (location.x <= (card_location.x + constants.CELL_WIDTH)) and
                     (location.y >= card_location.y) and
                     (location.y <= (card_location.y + constants.CELL_WIDTH*2/3))):
-                    return True, card
-        return False, None
+                    offset = Location(location.x - card_location.x, location.y - card_location.y)
+                    return True, card, offset
+        return False, None, None
 
 
     def doubleclick(self, location):

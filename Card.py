@@ -1,6 +1,7 @@
 # Card.py
 
 import pygame
+import traceback
 
 import constants
 from CardValues import CardValues

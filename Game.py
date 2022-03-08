@@ -35,7 +35,6 @@ class Game(Runnable):
 
             elif self.controller.event == Events.LEFT_MOUSE_DOWN:
                 self.board.left_mouse_down(self.controller.mouse_location)
-                self.board.draw(self.controller.screen)
 
             elif self.controller.event == Events.LEFT_MOUSE_UP:
                 self.board.left_mouse_up(self.controller.mouse_location)
