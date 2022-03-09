@@ -29,7 +29,6 @@ class KlondikeSolitaireBoard:
         self.selected_pile = None
         self.mouse_down_pile = None
         self.mouse_down_card = None
-        self.mouse_down_card_original_location = None
         self.mouse_down_card_location = None
         self.mouse_down_card_offset = None
  
@@ -126,17 +125,10 @@ class KlondikeSolitaireBoard:
     def draw(self, screen):
         screen.fill(constants.GREEN)
         self.game_instructions.draw(screen)
-        self.stock_pile.draw(screen)
-        self.waste_pile.draw(screen, self.mouse_down_card, self.mouse_down_card_location)
-        for pile in self.foundation_piles:
-            pile.draw(screen)
-        for i,tableau_face_down_pile in enumerate(self.tableau_face_down_piles):
-            tableau_face_down_pile.draw(screen)
-            self.tableau_face_up_piles[i].location = Location(tableau_face_down_pile.location.x,
-                tableau_face_down_pile.location.y + round(constants.CELL_WIDTH/5)*len(tableau_face_down_pile))
-            self.tableau_face_up_piles[i].draw(screen)
-
-        # draw moved card pile last
+        for pile in self.my_piles:
+            if not pile == self.mouse_down_pile:
+                pile.draw(screen)
+        # draw mouse_down_pile last
         if not self.mouse_down_pile is None:
             self.mouse_down_pile.draw(screen, self.mouse_down_card, self.mouse_down_card_location)
         pygame.display.flip()
@@ -154,11 +146,16 @@ class KlondikeSolitaireBoard:
             raise TypeError(f'location is type {type(location)} is not type Location')
         self.mouse_down_pile, self.mouse_down_card, self.mouse_down_card_offset = self._get_pile_and_card(location)
         if not self.mouse_down_card_offset is None:
-            self.mouse_down_card_location = self.mouse_down_card_original_location = Location(location.x - self.mouse_down_card_offset.x, location.y - self.mouse_down_card_offset.y)
+            self.mouse_down_card_location = Location(location.x - self.mouse_down_card_offset.x, location.y - self.mouse_down_card_offset.y)
 
     def left_mouse_up(self, location):
         if not isinstance(location, Location):
             raise TypeError(f'location is type {type(location)} is not type Location')
+        
+        mouse_up_pile = self._get_mouse_up_pile(location)
+        if not mouse_up_pile is None:
+            print("Mouse_up_pile", mouse_up_pile)
+        
         mouse_up_pile, mouse_up_card, mouse_up_offset = self._get_pile_and_card(location)
         if not self.mouse_down_pile is None and not mouse_up_pile is None:
             if self.mouse_down_pile == mouse_up_pile and self.mouse_down_card == mouse_up_card:
@@ -168,7 +165,6 @@ class KlondikeSolitaireBoard:
         self.mouse_down_pile = None
         self.mouse_down_card = None
         self.mouse_down_card_offset = None
-        self.mouse_down_card_original_location = None
         self.mouse_down_card_location = None
 
     def left_mouse_motion(self, location):
@@ -176,9 +172,8 @@ class KlondikeSolitaireBoard:
             raise TypeError(f'location is type {type(location)} is not type Location')
         if not self.mouse_down_pile is None:
             if not self.mouse_down_card is None:
-                if not self.mouse_down_card_original_location is None:
-                    if not self.mouse_down_card_offset is None:
-                        self.mouse_down_card_location = Location(location.x - self.mouse_down_card_offset.x, location.y - self.mouse_down_card_offset.y)
+                if not self.mouse_down_card_offset is None:
+                    self.mouse_down_card_location = Location(location.x - self.mouse_down_card_offset.x, location.y - self.mouse_down_card_offset.y)
 
     def _get_pile_and_card(self, location):
         for pile in self.my_piles:
@@ -186,6 +181,16 @@ class KlondikeSolitaireBoard:
             if selected:
                 return pile, card, offset
         return None, None, None
+
+    def _get_mouse_up_pile(self, location):
+        print(location)
+        if self.mouse_down_card_offset is None:
+            return None
+        mouse_rect = pygame.Rect(location.x - self.mouse_down_card_offset.x, self.mouse_down_card_offset.y, constants.CELL_WIDTH, constants.CELL_WIDTH)
+        for pile in self.my_piles:
+            if pile.intercects(mouse_rect):
+                return pile
+        return None
 
     def _click(self, location):
 

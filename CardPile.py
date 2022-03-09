@@ -58,6 +58,9 @@ class CardPile:
     def is_selected(self, location):
         return False, None, None
 
+    def intercects(self, other_rect):
+        return False
+
 class WastePile(CardPile):
 
     def __init__(self, name, cards=None, location=Location(0,0)):
@@ -167,6 +170,10 @@ class FoundationPile(CardPile):
         else:
             return False, None, None
 
+    def intercects(self, other_rect):
+        my_rect = pygame.Rect(self.location.x, self.location.y, constants.CELL_WIDTH, constants.CELL_WIDTH)
+        return my_rect.colliderect(other_rect)
+
     def is_valid_move_to(self, from_pile, card):
 
         if card is None:
@@ -210,8 +217,10 @@ class TableauFaceUpPile(CardPile):
         self.second_click_move_from_allowed = True
 
     def draw(self, screen, selected_card=None, selected_card_location=None):
+        mylocation = Location(self.my_face_down_pile.location.x,
+        self.my_face_down_pile.location.y + round(constants.CELL_WIDTH/5)*len(self.my_face_down_pile))
         for i, card in enumerate(self.cards):
-            card_location = Location(self.location.x, self.location.y + round(constants.CELL_WIDTH*2/3)*i)
+            card_location = Location(mylocation.x, mylocation.y + round(constants.CELL_WIDTH*2/3)*i)
             card.draw(screen, card_location, True)
 
     # returns True clicked in this pile
