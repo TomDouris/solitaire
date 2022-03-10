@@ -184,6 +184,9 @@ class TableauFaceUpPile(CardPile):
         self.my_face_down_pile.location.y + round(constants.CELL_WIDTH/5)*len(self.my_face_down_pile))
         for i, card in enumerate(self.cards):
             card_location = Location(mylocation.x, mylocation.y + round(constants.CELL_WIDTH*2/3)*i)
+            if not selected_card is None and not selected_card_location is None:
+                if selected_card == card:
+                    card_location = selected_card_location
             card.draw(screen, card_location, True)
 
     def selected(self, location):
@@ -202,33 +205,30 @@ class TableauFaceUpPile(CardPile):
                     (location.x <= (card_location.x + constants.CELL_WIDTH)) and
                     (location.y >= card_location.y) and
                     (location.y <= (card_location.y + constants.CELL_WIDTH))):
-                    offset = Location(location.x - card_location.x, location.y - card_location.y)
-                    return True, card, None
+                    self.selected_card_index = i
+                    my_rect = pygame.Rect(card_location.x, card_location.y, constants.CELL_WIDTH, constants.CELL_WIDTH)
+                    return True, card, my_rect
             else:
                 if ((location.x >= card_location.x) and
                     (location.x <= (card_location.x + constants.CELL_WIDTH)) and
                     (location.y >= card_location.y) and
                     (location.y <= (card_location.y + constants.CELL_WIDTH*2/3))):
+                    self.selected_card_index = i
                     offset = Location(location.x - card_location.x, location.y - card_location.y)
                     return True, card, None
         return False, None, None
 
+    def intercects(self, other_rect):
+        if len(self.my_face_down_pile) == 0:
+            top_card_location = Location(self.my_face_down_pile.location.x, self.my_face_down_pile.location.y)
+        else:
+            mylocation = Location(self.my_face_down_pile.location.x,
+                self.my_face_down_pile.location.y + round(constants.CELL_WIDTH/5)*len(self.my_face_down_pile))
+            top_card_location = Location(mylocation.x, mylocation.y + round(constants.CELL_WIDTH)*(len(self.cards)-1))
+        my_rect = pygame.Rect(top_card_location.x, top_card_location.y, constants.CELL_WIDTH, constants.CELL_WIDTH)
+        return my_rect.colliderect(other_rect)
 
-    def doubleclick(self, location):
-        if len(self.cards) == 0:
-            return False
-        card = self.cards[-1]
-        card_index = len(self.cards) - 1
-        card_location = Location(self.location.x, self.location.y + round(constants.CELL_WIDTH*2/3)*card_index)
-        if ((location.x >= card_location.x) and
-            (location.x <= (card_location.x + constants.CELL_WIDTH)) and
-            (location.y >= card_location.y) and
-            (location.y <= (card_location.y + constants.CELL_WIDTH))):
-            card.selected = True
-            self.selected_card = card
-            self.selected_card_index = card_index
-            return True
-        return False
+
 
     def is_valid_move_to(self, from_pile, card):
 
