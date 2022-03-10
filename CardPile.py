@@ -27,6 +27,7 @@ class CardPile:
         self.location = location
         self.selected_card = None
         self.second_click_move_from_allowed = False
+        self.drag_from_allowed = False
 
     def __str__(self):
         string_value = f'{self.name} cards:'
@@ -41,10 +42,6 @@ class CardPile:
     def draw(self, screen, selected_card=None, selected_card_location=None):             # Abstract method, defined by convention only
         raise NotImplementedError("Subclass must implement abstract method")
 
-    # returns True if card was clicked in this pile
-    def click(self, location):
-        return False
-
     def doubleclick(self, location):
         return False
 
@@ -55,7 +52,7 @@ class CardPile:
         if not self.selected_card is None:
             self.selected_card.selected = False
 
-    def is_selected(self, location):
+    def selected(self, location):
         return False, None, None
 
     def intercects(self, other_rect):
@@ -67,6 +64,7 @@ class WastePile(CardPile):
         CardPile.__init__(self, name, cards, location)
         self.cards_to_display = 0
         self.second_click_move_from_allowed = True
+        self.drag_from_allowed = False
 
     def draw(self, screen, selected_card=None, selected_card_location=None):
         if len(self.cards) > 0:
@@ -78,32 +76,16 @@ class WastePile(CardPile):
                         card_location = selected_card_location
                 card.draw(screen, card_location, True)
 
-    # returns True clicked in this pile
-    def click(self, location):
+    def selected(self, location):
         if self.cards_to_display > 0:
             last_card_location = Location(self.location.x + constants.CELL_WIDTH*2/3*(self.cards_to_display-1), self.location.y)
             if ((location.x >= last_card_location.x) and
                 (location.x <= (last_card_location.x + constants.CELL_WIDTH)) and
                 (location.y >= last_card_location.y) and
                 (location.y <= (last_card_location.y + constants.CELL_WIDTH))):
-                    self.selected_card = self.cards[len(self.cards)-1]
-                    self.selected_card.selected = True
-                    return True
-        return False
-
-    def is_selected(self, location):
-        if self.cards_to_display > 0:
-            last_card_location = Location(self.location.x + constants.CELL_WIDTH*2/3*(self.cards_to_display-1), self.location.y)
-            if ((location.x >= last_card_location.x) and
-                (location.x <= (last_card_location.x + constants.CELL_WIDTH)) and
-                (location.y >= last_card_location.y) and
-                (location.y <= (last_card_location.y + constants.CELL_WIDTH))):
-                    offset = Location(location.x - last_card_location.x, location.y - last_card_location.y)
-                    return True, self.cards[-1], offset
+                    my_rect = pygame.Rect(last_card_location.x, last_card_location.y, constants.CELL_WIDTH, constants.CELL_WIDTH)
+                    return True, self.cards[-1], my_rect
         return False, None, None
-
-    def doubleclick(self, location):
-        return self.click(location)
 
 class StockPile(CardPile):
 
@@ -119,17 +101,7 @@ class StockPile(CardPile):
             pygame.draw.rect(screen, constants.BLUE,
                 [self.location.x, self.location.y, constants.CELL_WIDTH, constants.CELL_WIDTH],1)
 
-    # returns True clicked in this pile
-    def click(self, location):
-        if ((location.x >= self.location.x) and
-            (location.x <= (self.location.x + constants.CELL_WIDTH)) and
-            (location.y >= self.location.y) and
-            (location.y <= (self.location.y + constants.CELL_WIDTH))):
-            return True
-        else:
-            return False
-
-    def is_selected(self, location):
+    def selected(self, location):
         if ((location.x >= self.location.x) and
             (location.x <= (self.location.x + constants.CELL_WIDTH)) and
             (location.y >= self.location.y) and
@@ -151,17 +123,7 @@ class FoundationPile(CardPile):
             pygame.draw.rect(screen, constants.BLUE,
                 [self.location.x, self.location.y, constants.CELL_WIDTH, constants.CELL_WIDTH],1)
 
-    # returns True clicked in this pile
-    def click(self, location):
-        if ((location.x >= self.location.x) and
-            (location.x <= (self.location.x + constants.CELL_WIDTH)) and
-            (location.y >= self.location.y) and
-            (location.y <= (self.location.y + constants.CELL_WIDTH))):
-            return True
-        else:
-            return False
-
-    def is_selected(self, location):
+    def selected(self, location):
         if ((location.x >= self.location.x) and
             (location.x <= (self.location.x + constants.CELL_WIDTH)) and
             (location.y >= self.location.y) and
@@ -215,6 +177,7 @@ class TableauFaceUpPile(CardPile):
         self.selected_card_index = -1
         self.my_face_down_pile = my_face_down_pile
         self.second_click_move_from_allowed = True
+        self.drag_from_allowed = False
 
     def draw(self, screen, selected_card=None, selected_card_location=None):
         mylocation = Location(self.my_face_down_pile.location.x,
@@ -223,59 +186,31 @@ class TableauFaceUpPile(CardPile):
             card_location = Location(mylocation.x, mylocation.y + round(constants.CELL_WIDTH*2/3)*i)
             card.draw(screen, card_location, True)
 
-    # returns True clicked in this pile
-    def click(self, location, last_card=False):
+    def selected(self, location):
+        mylocation = Location(self.my_face_down_pile.location.x,
+        self.my_face_down_pile.location.y + round(constants.CELL_WIDTH/5)*len(self.my_face_down_pile))
         if len(self.cards) == 0:
-            if ((location.x >= self.location.x) and
-                (location.x <= (self.location.x + constants.CELL_WIDTH)) and
-                (location.y >= self.location.y) and
-                (location.y <= (self.location.y + constants.CELL_WIDTH))):
-                return True
-        for i,card in enumerate(self.cards):
-            card_location = Location(self.location.x, self.location.y + round(constants.CELL_WIDTH*2/3)*i)
-            if (i == len(self.cards)-1):        # last card is a little larger
-                if ((location.x >= card_location.x) and
-                    (location.x <= (card_location.x + constants.CELL_WIDTH)) and
-                    (location.y >= card_location.y) and
-                    (location.y <= (card_location.y + constants.CELL_WIDTH))):
-                    card.selected = True
-                    self.selected_card = card
-                    self.selected_card_index = i
-                    return True
-            else:
-                if ((location.x >= card_location.x) and
-                    (location.x <= (card_location.x + constants.CELL_WIDTH)) and
-                    (location.y >= card_location.y) and
-                    (location.y <= (card_location.y + constants.CELL_WIDTH*2/3))):
-                    card.selected = True
-                    self.selected_card = card
-                    self.selected_card_index = i
-                    return True
-        return False
-
-    def is_selected(self, location):
-        if len(self.cards) == 0:
-            if ((location.x >= self.location.x) and
-                (location.x <= (self.location.x + constants.CELL_WIDTH)) and
-                (location.y >= self.location.y) and
-                (location.y <= (self.location.y + constants.CELL_WIDTH))):
+            if ((location.x >= mylocation.x) and
+                (location.x <= (mylocation.x + constants.CELL_WIDTH)) and
+                (location.y >= mylocation.y) and
+                (location.y <= (mylocation.y + constants.CELL_WIDTH))):
                 return True, None, None
         for i,card in enumerate(self.cards):
-            card_location = Location(self.location.x, self.location.y + round(constants.CELL_WIDTH*2/3)*i)
+            card_location = Location(mylocation.x, mylocation.y + round(constants.CELL_WIDTH*2/3)*i)
             if (i == len(self.cards)-1):        # last card is a little larger
                 if ((location.x >= card_location.x) and
                     (location.x <= (card_location.x + constants.CELL_WIDTH)) and
                     (location.y >= card_location.y) and
                     (location.y <= (card_location.y + constants.CELL_WIDTH))):
                     offset = Location(location.x - card_location.x, location.y - card_location.y)
-                    return True, card, offset
+                    return True, card, None
             else:
                 if ((location.x >= card_location.x) and
                     (location.x <= (card_location.x + constants.CELL_WIDTH)) and
                     (location.y >= card_location.y) and
                     (location.y <= (card_location.y + constants.CELL_WIDTH*2/3))):
                     offset = Location(location.x - card_location.x, location.y - card_location.y)
-                    return True, card, offset
+                    return True, card, None
         return False, None, None
 
 
