@@ -28,7 +28,7 @@ class KlondikeSolitaireBoard:
         self.game_won = False
         
         self.selected_pile = None
-        self.selected_card = None
+        self.selected_cards = None
         self.selected_location = None
         self.selected_rect = None
         self.current_location = None
@@ -131,7 +131,7 @@ class KlondikeSolitaireBoard:
                 pile.draw(screen)
         # draw selected_pile last
         if not self.selected_pile is None:
-            self.selected_pile.draw(screen, self.selected_card, self.selected_rect)
+            self.selected_pile.draw(screen, self.selected_cards[0], self.selected_rect)
         pygame.display.flip()
 
     def undo(self):
@@ -145,10 +145,10 @@ class KlondikeSolitaireBoard:
     def left_mouse_down(self, location):
 
         for pile in self.my_piles:
-            selected, card, my_rect = pile.selected(location)
+            selected, cards, my_rect = pile.selected(location)
             if selected:
                 self.selected_pile = pile
-                self.selected_card = card
+                self.selected_cards = cards
                 self.current_location = self.selected_location = location
                 self.selected_rect = my_rect
 
@@ -161,20 +161,20 @@ class KlondikeSolitaireBoard:
 
         if not self.selected_pile is None:
             for pile in self.my_piles:
-                selected, card, my_rect = pile.selected(location)
+                selected, cards, my_rect = pile.selected(location)
                 if selected:
                     if pile == self.selected_pile:
                         self.click(pile)
                         break
-                if not self.selected_rect is None and not self.selected_card is None:
+                if not self.selected_rect is None and not self.selected_cards is None and len(self.selected_cards) > 0:
                     self.selected_rect.move_ip(location.x - self.current_location.x, location.y - self.current_location.y)
                     self.current_location = location
                     if pile.intercects(self.selected_rect):
-                        if pile.is_valid_move_to(self.selected_pile, self.selected_card):
-                            self._move_cards(self.selected_pile, pile, 1)
+                        if pile.is_valid_move_to(self.selected_pile, self.selected_cards[0]):
+                            self._move_cards(self.selected_pile, pile, len(self.selected_cards))
                         break
         self.selected_pile = None
-        self.selected_card = None
+        self.selected_cards = None
         self.selected_location = None
         self.current_location = None
         self.selected_rect = None
