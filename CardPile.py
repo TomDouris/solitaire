@@ -48,10 +48,6 @@ class CardPile:
     def is_valid_move_to(self, from_pile, card):
        return False
 
-    def deselect_card(self):
-        if not self.selected_card is None:
-            self.selected_card.selected = False
-
     def selected(self, location):
         return False, None, None
 
@@ -219,15 +215,19 @@ class TableauFaceUpPile(CardPile):
         return False, None, None
 
     def intercects(self, other_rect):
-        if len(self.my_face_down_pile) == 0:
-            top_card_location = Location(self.my_face_down_pile.location.x, self.my_face_down_pile.location.y)
+
+        if len(self) == 0:
+            top_card_location = Location(self.my_face_down_pile.location.x,
+                                         self.my_face_down_pile.location.y +
+                                                round(constants.CELL_WIDTH/5)*len(self.my_face_down_pile))
         else:
-            mylocation = Location(self.my_face_down_pile.location.x,
-                self.my_face_down_pile.location.y + round(constants.CELL_WIDTH/5)*len(self.my_face_down_pile))
-            top_card_location = Location(mylocation.x, mylocation.y + round(constants.CELL_WIDTH)*(len(self.cards)-1))
+            top_card_location = Location(self.my_face_down_pile.location.x,
+                                         self.my_face_down_pile.location.y +
+                                                round(constants.CELL_WIDTH/5)*len(self.my_face_down_pile) +
+                                                round(constants.CELL_WIDTH*2/3)*(len(self)-1))
+#        print("top_card_location", self.name, top_card_location)
         my_rect = pygame.Rect(top_card_location.x, top_card_location.y, constants.CELL_WIDTH, constants.CELL_WIDTH)
         return my_rect.colliderect(other_rect)
-
 
 
     def is_valid_move_to(self, from_pile, card):

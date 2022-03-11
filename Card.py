@@ -22,7 +22,6 @@ class Card:
 
         self.value = value
         self.suit = suit
-        self.selected = False
 
     # This method gets called when using == on the object
     def __eq__(self, other):
@@ -36,10 +35,7 @@ class Card:
 
         if face_up:
             #fill
-            if self.selected:
-                color = constants.LIGHT_BLUE
-            else:
-                color = constants.WHITE
+            color = constants.WHITE
             pygame.draw.rect(screen, color, [location.x, location.y, constants.CELL_WIDTH, constants.CELL_WIDTH],0)
             #border
             pygame.draw.rect(screen, constants.BLACK, 
