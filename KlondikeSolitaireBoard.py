@@ -32,6 +32,10 @@ class KlondikeSolitaireBoard:
         self.selected_location = None
         self.selected_rect = None
         self.current_location = None
+
+        self.single_click_pile = None
+        self.single_click_card = None
+        self.single_click_ticks = 0
  
     def _deal(self):
 
@@ -164,7 +168,7 @@ class KlondikeSolitaireBoard:
                 selected, cards, my_rect = pile.selected(location)
                 if selected:
                     if pile == self.selected_pile:
-                        self.click(pile)
+                        self.click(pile, cards)
                         break
                 if not self.selected_rect is None and not self.selected_cards is None and len(self.selected_cards) > 0:
                     self.selected_rect.move_ip(location.x - self.current_location.x, location.y - self.current_location.y)
@@ -179,14 +183,41 @@ class KlondikeSolitaireBoard:
         self.current_location = None
         self.selected_rect = None
 
-    def click(self, pile):
-        if isinstance(pile, StockPile):
+    def click(self, pile, cards):
+        if isinstance(pile, WastePile) or isinstance(pile, TableauFaceUpPile):
+            if not cards is None and len(cards) == 1:
+                card = cards[0]
+                ticks = pygame.time.get_ticks()
+                if not self.single_click_pile is None and self.single_click_pile == pile and self.single_click_card == card and ticks - self.single_click_ticks < 500:   # less than .5 seconds
+                    self.double_click(pile, card)
+                else:
+                    self.single_click_pile = pile
+                    self.single_click_card = card
+                    self.single_click_ticks = ticks
+                    return
+
+        elif isinstance(pile, StockPile):
             if (len(self.stock_pile) != 0):
                 cards_to_deal = min(3, len(self.stock_pile))
                 self._deal_cards(self.stock_pile, self.waste_pile, cards_to_deal)
                 self.waste_pile.cards_to_display = cards_to_deal
             else:
                 self._deal_cards(self.waste_pile, self.stock_pile, len(self.waste_pile))
+
+        self.single_click_pile = None
+        self.single_click_card = None
+        self.single_click_ticks = 0
+
+    def double_click(self, pile, card):
+
+        for foundation_pile in self.foundation_piles:
+            if foundation_pile.is_valid_move_to(pile, card):
+                self._move_cards(pile, foundation_pile, 1)
+                break
+
+        if len(self.waste_pile) > 0 and self.waste_pile.cards_to_display == 0:
+            self.waste_pile.cards_to_display = 1
+
 
     def _move_cards(self, from_pile, to_pile, cards_to_move):
         to_pile.cards.extend(from_pile.cards[-cards_to_move:])
