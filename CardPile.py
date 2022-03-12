@@ -176,13 +176,18 @@ class TableauFaceUpPile(CardPile):
         self.drag_from_allowed = False
 
     def draw(self, screen, selected_card=None, selected_card_location=None):
+        selected_card_found = False
         mylocation = Location(self.my_face_down_pile.location.x,
         self.my_face_down_pile.location.y + round(constants.CELL_WIDTH/5)*len(self.my_face_down_pile))
+        selected_card_index = None
         for i, card in enumerate(self.cards):
             card_location = Location(mylocation.x, mylocation.y + round(constants.CELL_WIDTH*2/3)*i)
             if not selected_card is None and not selected_card_location is None:
                 if selected_card == card:
                     card_location = selected_card_location
+                    selected_card_index = i
+                elif not selected_card_index is None:
+                    card_location = Location(selected_card_location.x, selected_card_location.y + round(constants.CELL_WIDTH*2/3)*(i-selected_card_index))
             card.draw(screen, card_location, True)
 
     def selected(self, location):
@@ -196,22 +201,23 @@ class TableauFaceUpPile(CardPile):
                 return True, None, None
         for i,card in enumerate(self.cards):
             card_location = Location(mylocation.x, mylocation.y + round(constants.CELL_WIDTH*2/3)*i)
-            if (i == len(self.cards)-1):        # last card is a little larger
+            if (i == len(self)-1):        # last card is a little larger
                 if ((location.x >= card_location.x) and
                     (location.x <= (card_location.x + constants.CELL_WIDTH)) and
                     (location.y >= card_location.y) and
                     (location.y <= (card_location.y + constants.CELL_WIDTH))):
                     self.selected_card_index = i
                     my_rect = pygame.Rect(card_location.x, card_location.y, constants.CELL_WIDTH, constants.CELL_WIDTH)
-                    return True, [card], my_rect
+                    return True, self.cards[i:], my_rect
             else:
                 if ((location.x >= card_location.x) and
                     (location.x <= (card_location.x + constants.CELL_WIDTH)) and
                     (location.y >= card_location.y) and
                     (location.y <= (card_location.y + constants.CELL_WIDTH*2/3))):
                     self.selected_card_index = i
-                    offset = Location(location.x - card_location.x, location.y - card_location.y)
-                    return True, [card], None
+                    length_of_cards = round(constants.CELL_WIDTH*2/3)*(len(self)-i-1) + constants.CELL_WIDTH
+                    my_rect = pygame.Rect(card_location.x, card_location.y, constants.CELL_WIDTH, length_of_cards)
+                    return True, self.cards[i:], my_rect
         return False, None, None
 
     def intercects(self, other_rect):

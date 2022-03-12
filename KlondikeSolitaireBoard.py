@@ -127,11 +127,11 @@ class KlondikeSolitaireBoard:
         screen.fill(constants.GREEN)
         self.game_instructions.draw(screen)
         for pile in self.my_piles:
-            if not pile == self.selected_pile:
+            if not pile == self.selected_pile or self.selected_cards is None or self.selected_rect is None:
                 pile.draw(screen)
         # draw selected_pile last
-        if not self.selected_pile is None:
-            self.selected_pile.draw(screen, self.selected_cards[0], self.selected_rect)
+        if not self.selected_pile is None and not self.selected_cards is None and not self.selected_rect is None:
+            self.selected_pile.draw(screen, self.selected_cards[0], Location(self.selected_rect.left, self.selected_rect.top))
         pygame.display.flip()
 
     def undo(self):
@@ -187,8 +187,6 @@ class KlondikeSolitaireBoard:
                 self.waste_pile.cards_to_display = cards_to_deal
             else:
                 self._deal_cards(self.waste_pile, self.stock_pile, len(self.waste_pile))
-            if len(self.waste_pile) > 0 and self.waste_pile.cards_to_display == 0:
-                self.waste_pile.cards_to_display = 1
 
     def _move_cards(self, from_pile, to_pile, cards_to_move):
         to_pile.cards.extend(from_pile.cards[-cards_to_move:])
@@ -202,6 +200,8 @@ class KlondikeSolitaireBoard:
         if isinstance(from_pile, TableauFaceUpPile):
             if len(from_pile) == 0 and len(from_pile.my_face_down_pile) > 0:
                 self._move_cards(from_pile.my_face_down_pile, from_pile, 1)
+        if len(self.waste_pile) > 0 and self.waste_pile.cards_to_display == 0:
+            self.waste_pile.cards_to_display = 1
 
     def _deal_cards(self, from_pile, to_pile, cards_to_deal):
         waste_pile_cards_to_display = 0
