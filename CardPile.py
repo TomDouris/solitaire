@@ -63,13 +63,15 @@ class WastePile(CardPile):
         self.drag_from_allowed = False
 
     def draw(self, screen, selected_card=None, selected_card_location=None):
-        if len(self.cards) > 0:
-            for i in range(self.cards_to_display):
-                card = self.cards[len(self.cards)-self.cards_to_display + i]
-                card_location = Location(self.location.x + constants.CELL_WIDTH*2/3*i, self.location.y)
-                if not selected_card is None and not selected_card_location is None:
-                    if selected_card == card:
-                        card_location = selected_card_location
+        if len(self) > 0:
+            for i, card in enumerate(self.cards):
+                if i < len(self) - self.cards_to_display:
+                    card_location = self.location
+                else:                   
+                    card_location = Location(self.location.x + constants.CELL_WIDTH*2/3*(i+self.cards_to_display-len(self)), self.location.y)
+                    if not selected_card is None and not selected_card_location is None:
+                        if selected_card == card:
+                            card_location = selected_card_location
                 card.draw(screen, card_location, True)
 
     def selected(self, location):
