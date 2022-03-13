@@ -36,6 +36,7 @@ class KlondikeSolitaireBoard:
         self.single_click_pile = None
         self.single_click_card = None
         self.single_click_ticks = 0
+        print(self)
  
     def _deal(self):
 
@@ -84,15 +85,8 @@ class KlondikeSolitaireBoard:
 
     def __str__(self):
         print_string = "KlondikeSolitaireBoard:"
-        print_string = print_string + '\n  stock_pile:' + str(self.stock_pile)
-        print_string = print_string + '\n  waste_pile:' + str(self.waste_pile)
-        print_string = print_string + '\n  foundation piles:'
-        for i, pile in enumerate(self.foundation_piles):
-            print_string = print_string + f'\n    {i+1}: {pile}'
-        for i, pile in enumerate(self.tableau_face_down_piles):
-            print_string = print_string + f'\n    {i+1}: {pile}'
-        for i, pile in enumerate(self.tableau_face_up_piles):
-            print_string = print_string + f'\n    {i+1}: {pile}'
+        for pile in self.my_piles:
+            print_string = print_string + '\n  ' + str(pile)
         return print_string
 
     def is_game_won(self):
@@ -105,17 +99,30 @@ class KlondikeSolitaireBoard:
         return self.game_won
 
     def _try_to_finish_game(self):
-        # if stock_pile, waste_pile, and tableau face down piles are empty finish up game because it is over
-        if len(self.stock_pile) != 0 or len(self.waste_pile) != 0 or len(max(self.tableau_face_down_piles, key=len)) != 0:
+
+        if len(self.stock_pile) != 0 or len(max(self.tableau_face_down_piles, key=len)) != 0 or len(self.waste_pile) > self.waste_pile.cards_to_display:
             return
-        while len(max(self.tableau_face_up_piles, key=len)) != 0:
+
+        card_piles_to_finish = []
+        card_piles_to_finish.extend(self.tableau_face_up_piles)
+
+        if len(self.waste_pile) > 0:
+            card_values = []
+            for card in self.waste_pile.cards:
+                card_values.append(card.value.value)
+            if card_values == sorted(card_values, reverse=True):
+                card_piles_to_finish.append(self.waste_pile)
+            else:
+                return
+
+        while len(max(card_piles_to_finish, key=len)) != 0:
             from_pile = None
             low_card_value = 14
-            for tableau_faceup_pile in self.tableau_face_up_piles:
-                if len(tableau_faceup_pile) > 0:
-                    if tableau_faceup_pile.cards[-1].value.value < low_card_value:
-                        low_card_value = tableau_faceup_pile.cards[-1].value.value
-                        from_pile = tableau_faceup_pile
+            for card_pile_to_finish in card_piles_to_finish:
+                if len(card_pile_to_finish) > 0:
+                    if card_pile_to_finish.cards[-1].value.value < low_card_value:
+                        low_card_value = card_pile_to_finish.cards[-1].value.value
+                        from_pile = card_pile_to_finish
             if from_pile is None:
                 return
             from_pile.selected_card_index = len(from_pile.cards)-1

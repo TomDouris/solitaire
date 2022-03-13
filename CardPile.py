@@ -233,7 +233,6 @@ class TableauFaceUpPile(CardPile):
                                          self.my_face_down_pile.location.y +
                                                 round(constants.CELL_WIDTH/5)*len(self.my_face_down_pile) +
                                                 round(constants.CELL_WIDTH*2/3)*(len(self)-1))
-#        print("top_card_location", self.name, top_card_location)
         my_rect = pygame.Rect(top_card_location.x, top_card_location.y, constants.CELL_WIDTH, constants.CELL_WIDTH)
         return my_rect.colliderect(other_rect)
 
