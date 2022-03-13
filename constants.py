@@ -24,9 +24,10 @@ PILE_OVERLAP_DOWN = 2
 PILE_TYLED_DOWN = 3
 
 KLONDIKE_INSTRUCTIONS = [
-    'Click on cards with mouse to move.',
-    'Press Ctrl-z to undo last move.',
-    'Press Esc to quit game and return to main menu.'
+    'Drag cards with mouse to move',
+    'Double click on card to move to Foundation Pile',
+    'Press Ctrl-z to undo last move',
+    'Press Esc to quit game and return to main menu'
 ]
 
 MAIN_MENU_INSTRUCTIONS = [
